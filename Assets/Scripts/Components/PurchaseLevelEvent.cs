@@ -1,7 +1,9 @@
+using Leopotam.Ecs;
+
 /// <summary>
-/// Событие покупки уровня бизнеса.
-/// Добавляется к entity при клике на кнопку повышения уровня.
+/// Event for business level purchase.
+/// Added to entity when clicking the level upgrade button.
 /// </summary>
 public struct PurchaseLevelEvent {
-    public string businessId;
+    public EcsEntity businessEntity;
 } 

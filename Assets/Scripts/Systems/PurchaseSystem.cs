@@ -2,128 +2,152 @@ using Leopotam.Ecs;
 using UnityEngine;
 
 /// <summary>
-/// Система обработки покупок (уровни и улучшения).
-/// Обрабатывает события покупок и проверяет достаточность средств.
+/// System for processing purchases (levels and upgrades).
+/// Processes purchase events and checks for sufficient funds.
+/// Uses direct links to entity for O(1) access.
 /// </summary>
 sealed class PurchaseSystem : IEcsRunSystem {
     EcsFilter<PurchaseLevelEvent> _levelPurchaseFilter;
     EcsFilter<PurchaseUpgrade1Event> _upgrade1PurchaseFilter;
     EcsFilter<PurchaseUpgrade2Event> _upgrade2PurchaseFilter;
-    EcsFilter<BusinessId, Level, NextLevelCost, Upgrade1, Upgrade2, BusinessData> _businessFilter;
     EcsFilter<Money> _moneyFilter;
-    readonly GameStaticData _staticData;
+    readonly StaticData _staticData;
 
-    public PurchaseSystem(GameStaticData staticData) {
+    public PurchaseSystem(StaticData staticData) {
         _staticData = staticData;
     }
 
     public void Run() {
         ProcessLevelPurchases();
-        ProcessUpgrade1Purchases();
-        ProcessUpgrade2Purchases();
+        ProcessUpgrade1();
+        ProcessUpgrade2();
     }
 
     void ProcessLevelPurchases() {
         foreach (var eventIdx in _levelPurchaseFilter) {
             ref var purchaseEvent = ref _levelPurchaseFilter.Get1(eventIdx);
-            ref var money = ref _moneyFilter.Get1(0);
+            
+            if (!TryGetValidBusinessEntity(purchaseEvent.businessEntity, out var businessEntity)) continue;
+            if (!TryGetMoneyEntity(out int moneyEntityIndex)) continue;
 
-            // Найти бизнес по ID
-            foreach (var businessIdx in _businessFilter) {
-                ref var businessId = ref _businessFilter.Get1(businessIdx);
-                
-                if (businessId.value != purchaseEvent.businessId) continue;
+            ref var level = ref businessEntity.Get<Level>();
+            ref var nextLevelCost = ref businessEntity.Get<NextLevelCost>();
 
-                ref var level = ref _businessFilter.Get2(businessIdx);
-                ref var nextLevelCost = ref _businessFilter.Get3(businessIdx);
-
-                // Проверить достаточность средств
-                if (money.value >= nextLevelCost.value) {
-                    // Списать деньги
-                    money.value -= nextLevelCost.value;
-                    
-                    // Повысить уровень
-                    level.value++;
-                    
-                    Debug.Log($"Куплен уровень {level.value} для бизнеса {businessId.value}");
-                } else {
-                    Debug.Log("Недостаточно средств для покупки уровня!");
-                }
-                break;
+            if (TryPurchase(moneyEntityIndex, nextLevelCost.value)) {
+                level.value++;
+                businessEntity.Get<DirtyBusinessUI>(); // Level changed
+                Debug.Log($"Level {level.value} purchased");
             }
-
-            // Удалить событие
-            _levelPurchaseFilter.GetEntity(eventIdx).Del<PurchaseLevelEvent>();
         }
     }
 
-    void ProcessUpgrade1Purchases() {
+
+    void ProcessUpgrade1() {
         foreach (var eventIdx in _upgrade1PurchaseFilter) {
             ref var purchaseEvent = ref _upgrade1PurchaseFilter.Get1(eventIdx);
-            ref var money = ref _moneyFilter.Get1(0);
+            
+            if (!TryGetValidBusinessEntity(purchaseEvent.businessEntity, out var businessEntity)) continue;
+            if (!TryGetMoneyEntity(out int moneyEntityIndex)) continue;
 
-            foreach (var businessIdx in _businessFilter) {
-                ref var businessId = ref _businessFilter.Get1(businessIdx);
-                
-                if (businessId.value != purchaseEvent.businessId) continue;
-
-                ref var upgrade1 = ref _businessFilter.Get4(businessIdx);
-                ref var businessData = ref _businessFilter.Get6(businessIdx);
-
-                if (upgrade1.bought) {
-                    Debug.Log("Улучшение 1 уже куплено!");
-                    break;
-                }
-
-                var preset = _staticData.businesses[businessData.presetIndex];
-
-                if (money.value >= preset.upgrade1Cost) {
-                    money.value -= preset.upgrade1Cost;
-                    upgrade1.bought = true;
-                    
-                    Debug.Log($"Куплено улучшение 1 для бизнеса {businessId.value}");
-                } else {
-                    Debug.Log("Недостаточно средств для покупки улучшения 1!");
-                }
-                break;
+            ref var upgrade = ref businessEntity.Get<Upgrade1>();
+            ref var businessData = ref businessEntity.Get<BusinessPresetIndex>();
+            var preset = GetBusinessPreset(businessData.presetIndex);
+            
+            if (ProcessUpgradeLogic(moneyEntityIndex, ref upgrade.bought, preset.upgrade1Cost)) {
+                businessEntity.Get<DirtyUpgradesUI>();
+                businessEntity.Get<DirtyBusinessUI>(); // Income also changed
             }
-
-            _upgrade1PurchaseFilter.GetEntity(eventIdx).Del<PurchaseUpgrade1Event>();
         }
     }
 
-    void ProcessUpgrade2Purchases() {
+    void ProcessUpgrade2() {
         foreach (var eventIdx in _upgrade2PurchaseFilter) {
             ref var purchaseEvent = ref _upgrade2PurchaseFilter.Get1(eventIdx);
-            ref var money = ref _moneyFilter.Get1(0);
+            
+            if (!TryGetValidBusinessEntity(purchaseEvent.businessEntity, out var businessEntity)) continue;
+            if (!TryGetMoneyEntity(out int moneyEntityIndex)) continue;
 
-            foreach (var businessIdx in _businessFilter) {
-                ref var businessId = ref _businessFilter.Get1(businessIdx);
-                
-                if (businessId.value != purchaseEvent.businessId) continue;
-
-                ref var upgrade2 = ref _businessFilter.Get5(businessIdx);
-                ref var businessData = ref _businessFilter.Get6(businessIdx);
-
-                if (upgrade2.bought) {
-                    Debug.Log("Улучшение 2 уже куплено!");
-                    break;
-                }
-
-                var preset = _staticData.businesses[businessData.presetIndex];
-
-                if (money.value >= preset.upgrade2Cost) {
-                    money.value -= preset.upgrade2Cost;
-                    upgrade2.bought = true;
-                    
-                    Debug.Log($"Куплено улучшение 2 для бизнеса {businessId.value}");
-                } else {
-                    Debug.Log("Недостаточно средств для покупки улучшения 2!");
-                }
-                break;
+            ref var upgrade = ref businessEntity.Get<Upgrade2>();
+            ref var businessData = ref businessEntity.Get<BusinessPresetIndex>();
+            var preset = GetBusinessPreset(businessData.presetIndex);
+            
+            if (ProcessUpgradeLogic(moneyEntityIndex, ref upgrade.bought, preset.upgrade2Cost)) {
+                businessEntity.Get<DirtyUpgradesUI>();
+                businessEntity.Get<DirtyBusinessUI>(); 
             }
-
-            _upgrade2PurchaseFilter.GetEntity(eventIdx).Del<PurchaseUpgrade2Event>();
         }
+    }
+
+    // Common logic for processing upgrade purchase
+    bool ProcessUpgradeLogic(int moneyEntityIndex, ref bool upgradeBought, float cost) {
+        if (upgradeBought) {
+            Debug.LogWarning($"Улучшение уже куплено!");
+            return false;
+        }
+        
+        if (TryPurchase(moneyEntityIndex, cost)) {
+            upgradeBought = true;
+            Debug.Log($"Куплено улучшение");
+            return true;
+        }
+        
+        return false;
+    }
+
+    // Helper methods to avoid duplication
+
+    bool TryGetValidBusinessEntity(EcsEntity businessEntity, out EcsEntity validEntity) {
+        validEntity = businessEntity;
+        
+        if (!businessEntity.IsAlive()) {
+            Debug.LogWarning("Попытка купить в несуществующем бизнесе!");
+            return false;
+        }
+
+        return true;
+    }
+
+    bool TryGetMoneyEntity(out int moneyEntityIndex) {
+        if (_moneyFilter.GetEntitiesCount() == 0) {
+            Debug.LogError("Не найдена сущность с деньгами!");
+            moneyEntityIndex = -1;
+            return false;
+        }
+
+        moneyEntityIndex = 0;
+        return true;
+    }
+
+    bool TryPurchase(int moneyEntityIndex, float cost) {
+        if (cost < 0) {
+            Debug.LogError($"Некорректная стоимость: {cost}");
+            return false;
+        }
+
+        ref var money = ref _moneyFilter.Get1(moneyEntityIndex);
+
+        if (money.value >= cost) {
+            money.value -= cost;
+            
+            // Помечаем что деньги изменились
+            var moneyEntity = _moneyFilter.GetEntity(moneyEntityIndex);
+            if (!moneyEntity.Has<DirtyMoneyUI>()) {
+                moneyEntity.Get<DirtyMoneyUI>();
+            }
+            
+            return true;
+        }
+
+        Debug.Log($"Недостаточно средств для покупки! Нужно: {cost:F0}$, есть: {money.value:F0}$");
+        return false;
+    }
+
+    BusinessPreset GetBusinessPreset(int presetIndex) {
+        if (presetIndex < 0 || presetIndex >= _staticData.businesses.Length) {
+            Debug.LogError($"Некорректный индекс бизнеса: {presetIndex}");
+            return _staticData.businesses[0]; // Fallback
+        }
+
+        return _staticData.businesses[presetIndex];
     }
 } 

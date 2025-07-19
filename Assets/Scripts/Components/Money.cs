@@ -1,5 +1,5 @@
 /// <summary>
-/// Деньги игрока. Singleton компонент (только одна сущность с этим компонентом).
+/// Player's money. Singleton component (only one entity with this component).
 /// </summary>
 public struct Money {
     public float value;

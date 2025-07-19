@@ -1,6 +1,8 @@
+using Leopotam.Ecs;
+
 /// <summary>
-/// Событие покупки второго улучшения.
+/// Event for second upgrade purchase.
 /// </summary>
 public struct PurchaseUpgrade2Event {
-    public string businessId;
+    public EcsEntity businessEntity;
 } 

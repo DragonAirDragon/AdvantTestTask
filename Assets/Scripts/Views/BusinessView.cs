@@ -4,93 +4,114 @@ using UnityEngine.UI;
 
 public class BusinessView : MonoBehaviour {
 
-    [SerializeField] private TextMeshProUGUI _textBusinessName;
-    [SerializeField] private TextMeshProUGUI _textBusinessLevel;
-    [SerializeField] private TextMeshProUGUI _textBusinessIncome;
+    [SerializeField] private TextMeshProUGUI _businessNameText;
+    [SerializeField] private TextMeshProUGUI _businessLevelText;
+    [SerializeField] private TextMeshProUGUI _businessIncomeText;
 
-    [SerializeField] private TextMeshProUGUI _textNextLevelCost;
-    [SerializeField] private TextMeshProUGUI _textUpgrade1;
-    [SerializeField] private TextMeshProUGUI _textUpgrade2;
+    [SerializeField] private TextMeshProUGUI _nextLevelButtonText;
+    [SerializeField] private TextMeshProUGUI _upgrade1ButtonText;
+    [SerializeField] private TextMeshProUGUI _upgrade2ButtonText;
 
-    [SerializeField] private Button _buttonBuyLevel;
-    [SerializeField] private Button _buttonUpgrade1;
-    [SerializeField] private Button _buttonUpgrade2;
+    [SerializeField] private Button _buyLevelButton;
+    [SerializeField] private Button _upgrade1Button;
+    [SerializeField] private Button _upgrade2Button;
 
-    [SerializeField] private Slider _sliderIncomeProgress;
+    [SerializeField] private Slider _incomeProgressSlider;
 
-    public void Init() {
-        
-    }
 
     /// <summary>
-    /// Настройка коллбэков для кнопок покупки
+    /// Setup callbacks for purchase buttons
     /// </summary>
     public void SetupCallbacks(System.Action onBuyLevel, System.Action onBuyUpgrade1, System.Action onBuyUpgrade2) {
-        _buttonBuyLevel.onClick.AddListener(() => onBuyLevel());
-        _buttonUpgrade1.onClick.AddListener(() => onBuyUpgrade1());
-        _buttonUpgrade2.onClick.AddListener(() => onBuyUpgrade2());
+        if (_buyLevelButton != null && _upgrade1Button != null && _upgrade2Button != null) {
+            _buyLevelButton.onClick.AddListener(() => onBuyLevel());
+            _upgrade1Button.onClick.AddListener(() => onBuyUpgrade1());
+            _upgrade2Button.onClick.AddListener(() => onBuyUpgrade2());
+        } else {
+            Debug.LogWarning("Not all buttons are assigned in the BusinessView prefab");
+        }
     }
 
     /// <summary>
-    /// Обновляет текст названия бизнеса
+    /// Updates the business name text
     /// </summary>
     /// <param name="displayName"></param>
     public void UpdateBusinessName(string displayName) {
-        _textBusinessName.text = displayName;
+        if (_businessNameText != null) {
+            _businessNameText.text = displayName;
+        } else {
+            Debug.LogWarning("_businessNameText not assigned in the BusinessView prefab");
+        }
     }
 
     /// <summary>
-    /// Обновляет значение индикатора прогресса дохода
+    /// Updates the income progress indicator
     /// </summary>
     /// <param name="progress"></param>
     public void UpdateIncomeProgress(float progress) {
-        _sliderIncomeProgress.value = progress;
+        if (_incomeProgressSlider != null) {
+            _incomeProgressSlider.value = progress;
+        }
     }
 
     /// <summary>
-    /// Обновляет текст уровня бизнеса
+    /// Updates the business level text
     /// </summary>
     /// <param name="level"></param>
     public void UpdateBusinessLevel(int level) {
-        _textBusinessLevel.text = "LVL: " + level.ToString();
+        if (_businessLevelText != null) {
+            _businessLevelText.text = "LVL: " + level.ToString();
+        }
     }
 
     /// <summary>
-    /// Обновляет текст дохода бизнеса
+    /// Updates the business income text
     /// </summary>
     /// <param name="income"></param>
     public void UpdateBusinessIncome(float income) {
-        _textBusinessIncome.text = "Доход: " + income.ToString() + "$";
+        if (_businessIncomeText != null) {
+            _businessIncomeText.text = "Доход: " + income.ToString() + "$";
+        }
     }
 
     /// <summary>
-    /// Обновляет текст кнопки покупки следующего уровня
+    /// Updates the next level purchase button text
     /// </summary>
     /// <param name="cost"></param>
     public void UpdateNextLevelCost(float cost) {
-        _textNextLevelCost.text = "LVL UP\nЦена: " + cost.ToString() + "$";
+        if (_nextLevelButtonText != null) {
+            _nextLevelButtonText.text = "LVL UP\nЦена: " + cost.ToString() + "$";
+        }
     }
 
     /// <summary>
-    /// Обновляет текст кнопки покупки первого улучшения
+    /// Updates the first upgrade purchase button text
     /// </summary>
     /// <param name="cost"></param>
     public void UpdateUpgrade1(string upgradeName, float cost, float multiplier, bool ready) {
-        _textUpgrade1.text = upgradeName + "\n" 
-        + "Доход: " + ((multiplier - 1) * 100) + "%" + "\n" 
-        + "Цена: " + (ready ? "Куплено" : (cost.ToString() + "$"));
-        _buttonUpgrade1.interactable = !ready;
+        if (_upgrade1ButtonText != null) {
+            _upgrade1ButtonText.text = upgradeName + "\n" 
+            + "Доход: " + ((multiplier - 1) * 100) + "%" + "\n" 
+            + "Цена: " + (ready ? "Куплено" : (cost.ToString() + "$"));
+        }
+        if (_upgrade1Button != null) {
+            _upgrade1Button.interactable = !ready;
+        }
     }
 
     /// <summary>
-    /// Обновляет текст кнопки покупки второго улучшения
+    /// Updates the second upgrade purchase button text
     /// </summary>
     /// <param name="cost"></param>
     public void UpdateUpgrade2(string upgradeName, float cost, float multiplier, bool ready) {
-        _textUpgrade2.text = upgradeName + "\n" 
-        + "Доход: " + ((multiplier - 1) * 100) + "%" + "\n" 
-        + "Цена: " + (ready ? "Куплено" : (cost.ToString() + "$"));
-        _buttonUpgrade2.interactable = !ready;
+        if (_upgrade2ButtonText != null) {
+            _upgrade2ButtonText.text = upgradeName + "\n" 
+            + "Доход: " + ((multiplier - 1) * 100) + "%" + "\n" 
+            + "Цена: " + (ready ? "Куплено" : (cost.ToString() + "$"));
+        }
+        if (_upgrade2Button != null) {
+            _upgrade2Button.interactable = !ready;
+        }
     }
     
     

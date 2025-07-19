@@ -1,15 +1,15 @@
 using Leopotam.Ecs;
 
 /// <summary>
-/// Система расчета стоимости следующего уровня.
-/// Формула: (текущий_уровень + 1) * базовая_стоимость
-/// Запускается при изменении уровня.
+/// System for calculating the cost of the next level.
+/// Formula: (current_level + 1) * base_cost
+/// Runs when level changes.
 /// </summary>
 sealed class CalculateLevelCostSystem : IEcsRunSystem {
-    EcsFilter<Level, NextLevelCost, BusinessData> _filter;
-    readonly GameStaticData _staticData;
+    readonly EcsFilter<Level, NextLevelCost, BusinessPresetIndex> _filter;
+    readonly StaticData _staticData;
 
-    public CalculateLevelCostSystem(GameStaticData staticData) {
+    public CalculateLevelCostSystem(StaticData staticData) {
         _staticData = staticData;
     }
 
@@ -17,9 +17,9 @@ sealed class CalculateLevelCostSystem : IEcsRunSystem {
         foreach (var i in _filter) {
             ref var level = ref _filter.Get1(i);
             ref var nextLevelCost = ref _filter.Get2(i);
-            ref var businessData = ref _filter.Get3(i);
+            ref var businessPresetIndex = ref _filter.Get3(i);
 
-            var preset = _staticData.businesses[businessData.presetIndex];
+            var preset = _staticData.businesses[businessPresetIndex.presetIndex];
             nextLevelCost.value = (level.value + 1) * preset.baseCost;
         }
     }

@@ -1,5 +1,5 @@
 /// <summary>
-///  Текущий уровень бизнеса (0 = ещё не куплен).
+///  Current level of business (0 = not bought).
 /// </summary>
 public struct Level {
     public int value;

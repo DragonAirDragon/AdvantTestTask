@@ -1,6 +1,5 @@
 /// <summary>
-/// Уникальный идентификатор бизнеса.
-/// Генерируется автоматически при создании нового бизнеса.
+/// Unique business id.
 /// </summary>
 public struct BusinessId {
     public string value;

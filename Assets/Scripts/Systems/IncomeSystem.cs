@@ -2,56 +2,52 @@ using Leopotam.Ecs;
 using UnityEngine;
 
 /// <summary>
-/// Система расчета и начисления дохода.
-/// Формула: LVL * baseIncome * (1 + upgrade1.incomeMul + upgrade2.incomeMul)
-/// Логика не выполняется если level == 0
+/// System for calculating and adding income.
+/// Uses pre-calculated income from CalculatedIncome component.
+/// Logic is not executed if level == 0.
+/// Adds dirty markers for updating UI.
 /// </summary>
 sealed class IncomeSystem : IEcsRunSystem {
-    EcsFilter<Level, IncomeProgress, BusinessData, Upgrade1, Upgrade2> _businessesFilter;
+    EcsFilter<Level, IncomeProgress, BusinessPresetIndex, CalculatedIncome> _businessesFilter;
     EcsFilter<Money> _moneyFilter;
-    readonly GameStaticData _staticData;
+    readonly StaticData _staticData;
 
-    public IncomeSystem(GameStaticData staticData) {
+    public IncomeSystem(StaticData staticData) {
         _staticData = staticData;
     }
 
     public void Run() {
-        // Получаем сущность с деньгами
+        // Get entity with money
         ref var money = ref _moneyFilter.Get1(0);
-        
+        var moneyEntity = _moneyFilter.GetEntity(0);
+
         foreach (var i in _businessesFilter) {
             ref var level = ref _businessesFilter.Get1(i);
-            ref var progress = ref _businessesFilter.Get2(i);
-            ref var businessData = ref _businessesFilter.Get3(i);
-            ref var upgrade1 = ref _businessesFilter.Get4(i);
-            ref var upgrade2 = ref _businessesFilter.Get5(i);
-
-            // Пропускаем если уровень 0 (бизнес не куплен)
+            ref var incomeProgress = ref _businessesFilter.Get2(i);
+            ref var businessPresetIndex = ref _businessesFilter.Get3(i);
+            ref var calculatedIncome = ref _businessesFilter.Get4(i);
+        
+            // Skip if level is 0 (business not purchased)
             if (level.value == 0) continue;
-
-            // Обновляем прогресс
-            progress.elapsed += Time.deltaTime;
-
-            // Если время дохода пришло
-            if (progress.elapsed >= progress.delay) {
-                // Сброс таймера
-                progress.elapsed = 0f;
+        
+            // Update progress
+            incomeProgress.elapsed += Time.deltaTime;
+        
+            // If income time has come
+            if (incomeProgress.elapsed >= incomeProgress.delay) {
+                // Reset timer
+                incomeProgress.elapsed = 0f;
                 
-                // Расчет дохода по формуле
-                var preset = _staticData.businesses[businessData.presetIndex];
-                float income = level.value * preset.baseIncome;
+                // Add pre-calculated income
+                money.value += calculatedIncome.value;
                 
-                // Применяем мультипликаторы улучшений
-                float multiplier = 1f;
-                if (upgrade1.bought) multiplier += preset.upgrade1IncomeMul - 1f;
-                if (upgrade2.bought) multiplier += preset.upgrade2IncomeMul - 1f;
+                // Mark that money has changed - need to update UI
+                if (!moneyEntity.Has<DirtyMoneyUI>()) {
+                    moneyEntity.Get<DirtyMoneyUI>();
+                }
                 
-                income *= multiplier;
-                
-                // Начисляем доход
-                money.value += income;
-                
-                Debug.Log($"Бизнес {preset.displayName} заработал: {income}$");
+                var preset = _staticData.businesses[businessPresetIndex.presetIndex];
+                Debug.Log($"Business {preset.displayName} earned: {calculatedIncome.value}$");
             }
         }
     }

@@ -500,16 +500,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5ce1a7c5f80d472498bc95d8c12e3361, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _textBusinessName: {fileID: 7940955544888009839}
-  _textBusinessLevel: {fileID: 2724329115733790080}
-  _textBusinessIncome: {fileID: 3686717273768530420}
-  _textNextLevelCost: {fileID: 4577372339410741432}
-  _textUpgrade1: {fileID: 519308574314443642}
-  _textUpgrade2: {fileID: 4946794592366855081}
-  _buttonBuyLevel: {fileID: 9032088885387457580}
-  _buttonUpgrade1: {fileID: 3602317283400617848}
-  _buttonUpgrade2: {fileID: 7145900743386296586}
-  _sliderIncomeProgress: {fileID: 2839043537803440257}
+  _businessNameText: {fileID: 7940955544888009839}
+  _businessLevelText: {fileID: 2724329115733790080}
+  _businessIncomeText: {fileID: 3686717273768530420}
+  _nextLevelButtonText: {fileID: 4577372339410741432}
+  _upgrade1ButtonText: {fileID: 519308574314443642}
+  _upgrade2ButtonText: {fileID: 4946794592366855081}
+  _buyLevelButton: {fileID: 9032088885387457580}
+  _upgrade1Button: {fileID: 3602317283400617848}
+  _upgrade2Button: {fileID: 7145900743386296586}
+  _incomeProgressSlider: {fileID: 2839043537803440257}
 --- !u!1 &3807150014125881249
 GameObject:
   m_ObjectHideFlags: 0

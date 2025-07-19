@@ -2,64 +2,92 @@ using Leopotam.Ecs;
 using UnityEngine;
 
 sealed class SpawnBusinessesSystem : IEcsInitSystem {
-    readonly GameStaticData _staticData;
+    readonly StaticData _staticData;
     readonly SceneData _scene;
+    readonly LoadService _loadService; 
     EcsWorld _world;
 
-    public SpawnBusinessesSystem(GameStaticData staticData, SceneData scene) {
+    public SpawnBusinessesSystem(StaticData staticData, SceneData scene, LoadService loadService) {
         _staticData = staticData;
         _scene = scene;
+        _loadService = loadService;
     }
 
     public void Init () {
-        // Создаем entity с деньгами игрока
+        // Load data through the service
+        var saveData = _loadService.LoadGame();
+        
+        // Create entity with player's money
         var moneyEntity = _world.NewEntity();
         ref var money = ref moneyEntity.Get<Money>();
-        money.value = 100f; // Начальные деньги
-
-        // Создаем бизнесы
+        money.value = saveData?.playerMoney ?? _staticData.startMoney;
+        
+        // Create businesses
         for (int i = 0; i < _staticData.businesses.Length; i++) {
             ref readonly var preset = ref _staticData.businesses[i];
             
             EcsEntity ent = _world.NewEntity();
             
-            // Основные компоненты
+            // Main components
             ref var businessId = ref ent.Get<BusinessId>();
+            ref var businessPresetIndex = ref ent.Get<BusinessPresetIndex>();
             ref var level = ref ent.Get<Level>();
             ref var progress = ref ent.Get<IncomeProgress>();
             ref var nextLevelCost = ref ent.Get<NextLevelCost>();
-            
-            // Новые компоненты
-            ref var businessData = ref ent.Get<BusinessData>();
             ref var upgrade1 = ref ent.Get<Upgrade1>();
             ref var upgrade2 = ref ent.Get<Upgrade2>();
+            ref var calculatedIncome = ref ent.Get<CalculatedIncome>();
             ref var viewRef = ref ent.Get<ViewRef>();
 
-            // Инициализация данных
+            // Initialize base data
             businessId.value = preset.id;
-            level.value = 0;
+            businessPresetIndex.presetIndex = i;
             progress.delay = preset.delay;
-            progress.elapsed = 0f;
-            nextLevelCost.value = (level.value + 1) * preset.baseCost;
-            businessData.presetIndex = i;
-            upgrade1.bought = false;
-            upgrade2.bought = false;
 
-            // Создание и настройка View
+            // Load saved data for the business
+            BusinessSaveData businessSave = null;
+            if (saveData != null) {
+                string presetId = preset.id;
+                businessSave = saveData.businesses.Find(b => b.businessId == presetId);
+            }
+
+            // Apply saved data FIRST
+            level.value = businessSave?.level ?? preset.startLevel;
+            upgrade1.bought = businessSave?.upgrade1Bought ?? false;
+            upgrade2.bought = businessSave?.upgrade2Bought ?? false;
+            progress.elapsed = businessSave?.elapsedTime ?? 0;
+
+            // Calculate dependent values AFTER loading data
+            nextLevelCost.value = (level.value + 1) * preset.baseCost;
+
+            // Calculate income for correct display
+            float income = level.value > 0 ? level.value * preset.baseIncome : 0f;
+            float multiplier = 1f;
+            if (upgrade1.bought) multiplier += preset.upgrade1IncomeMul - 1f;
+            if (upgrade2.bought) multiplier += preset.upgrade2IncomeMul - 1f;
+            calculatedIncome.value = income * multiplier;
+
+            // Create and setup View
             BusinessView view = Object.Instantiate(_scene.businessViewPrefab, _scene.businessListRoot);
             viewRef.view = view;
-           
-            view.Init();
+
             view.UpdateBusinessName(preset.displayName);
             view.UpdateBusinessLevel(level.value);
-            view.UpdateBusinessIncome(0);
+            view.UpdateBusinessIncome(calculatedIncome.value);
             view.UpdateNextLevelCost(nextLevelCost.value);
-            view.UpdateUpgrade1(preset.upgrade1Title, preset.upgrade1Cost, preset.upgrade1IncomeMul, false);
-            view.UpdateUpgrade2(preset.upgrade2Title, preset.upgrade2Cost, preset.upgrade2IncomeMul, false);
+            view.UpdateUpgrade1(preset.upgrade1Title, preset.upgrade1Cost, preset.upgrade1IncomeMul, upgrade1.bought);
+            view.UpdateUpgrade2(preset.upgrade2Title, preset.upgrade2Cost, preset.upgrade2IncomeMul, upgrade2.bought);
             
-            // Настройка контроллера для обработки событий UI
+            // Setup controller for handling UI events
             var controller = view.gameObject.AddComponent<BusinessController>();
-            controller.Init(_world, preset.id);
+            controller.Init(_world, ent);
+            
+            // Mark for initial UI display
+            ent.Get<DirtyBusinessUI>();
+            ent.Get<DirtyUpgradesUI>();
         }
+        
+        // Mark money for initial display
+        moneyEntity.Get<DirtyMoneyUI>();
     }
 }

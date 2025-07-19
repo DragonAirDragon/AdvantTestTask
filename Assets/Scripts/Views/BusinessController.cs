@@ -2,16 +2,16 @@ using Leopotam.Ecs;
 using UnityEngine;
 
 /// <summary>
-/// Контроллер для связи BusinessView с ECS системой.
-/// Обрабатывает события UI и создает соответствующие ECS события.
+/// Controller for connecting BusinessView with ECS system.
+/// Handles UI events and creates corresponding ECS events.
 /// </summary>
 public class BusinessController : MonoBehaviour {
     private EcsWorld _world;
-    private string _businessId;
+    private EcsEntity _businessEntity;
     
-    public void Init(EcsWorld world, string businessId) {
+    public void Init(EcsWorld world, EcsEntity businessEntity) {
         _world = world;
-        _businessId = businessId;
+        _businessEntity = businessEntity;
         
         // Подключаем обработчики кнопок
         var view = GetComponent<BusinessView>();
@@ -23,9 +23,9 @@ public class BusinessController : MonoBehaviour {
         
         var entity = _world.NewEntity();
         ref var purchaseEvent = ref entity.Get<PurchaseLevelEvent>();
-        purchaseEvent.businessId = _businessId;
+        purchaseEvent.businessEntity = _businessEntity;
         
-        Debug.Log($"Создано событие покупки уровня для {_businessId}");
+        Debug.Log($"Created level purchase event for {_businessEntity}");
     }
     
     private void OnBuyUpgrade1() {
@@ -33,9 +33,9 @@ public class BusinessController : MonoBehaviour {
         
         var entity = _world.NewEntity();
         ref var purchaseEvent = ref entity.Get<PurchaseUpgrade1Event>();
-        purchaseEvent.businessId = _businessId;
+        purchaseEvent.businessEntity = _businessEntity;
         
-        Debug.Log($"Создано событие покупки улучшения 1 для {_businessId}");
+        Debug.Log($"Created upgrade 1 purchase event for {_businessEntity}");
     }
     
     private void OnBuyUpgrade2() {
@@ -43,8 +43,8 @@ public class BusinessController : MonoBehaviour {
         
         var entity = _world.NewEntity();
         ref var purchaseEvent = ref entity.Get<PurchaseUpgrade2Event>();
-        purchaseEvent.businessId = _businessId;
+        purchaseEvent.businessEntity = _businessEntity;
         
-        Debug.Log($"Создано событие покупки улучшения 2 для {_businessId}");
+        Debug.Log($"Created upgrade 2 purchase event for {_businessEntity}");
     }
 } 

@@ -1,6 +1,6 @@
 /// <summary>
-///  Цена покупки следующего уровня.
-///  Обновляется системой ApplyLevelUpSystem после каждого апгрейда уровня.
+///  Price of next level.
+///  Updated by ApplyLevelUpSystem after each level upgrade.
 /// </summary>
 public struct NextLevelCost {
     public float value;
