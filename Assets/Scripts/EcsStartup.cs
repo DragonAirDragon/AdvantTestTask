@@ -5,13 +5,19 @@ using UnityEngine;
 public class EcsStartup : MonoBehaviour
 {
     [SerializeField] private StaticData _staticData;
-    [SerializeField] private SceneData _sceneData;    
+    [SerializeField] private SceneData _sceneData;
+    [SerializeField] private BusinessNamesData _localizationData;
     private EcsWorld _world;
     private EcsSystems _systems;
 
     private void Start()
     {
-        ClearSave();
+       
+        #if UNITY_ANDROID || UNITY_IOS
+            Application.targetFrameRate = 60; // Оптимальный баланс производительности и батареи
+        #endif
+        
+        //ClearSave();
         try
         {
             _world = new EcsWorld();
@@ -21,8 +27,8 @@ public class EcsStartup : MonoBehaviour
             var loadService = new LoadService();
 
             // Game systems
-            _systems.Add(new SpawnBusinessesSystem(_staticData, _sceneData, loadService))
-                    .Add(new IncomeSystem(_staticData))           
+            _systems.Add(new SpawnBusinessesSystem(_staticData, _sceneData, loadService, _localizationData))
+                    .Add(new IncomeSystem())           
                     .Add(new PurchaseSystem(_staticData))         
                     .Add(new CalculateIncomeSystem(_staticData))  
                     .Add(new CalculateLevelCostSystem(_staticData)) 
@@ -30,7 +36,7 @@ public class EcsStartup : MonoBehaviour
                     // UI systems (executed after all calculations)
                     .Add(new MoneyUISystem(_sceneData))
                     .Add(new BusinessCoreUISystem())
-                    .Add(new BusinessUpgradesUISystem(_staticData))
+                    .Add(new BusinessUpgradesUISystem(_staticData, _localizationData))
                     .Add(new IncomeProgressUISystem())
                     
                     // Save system

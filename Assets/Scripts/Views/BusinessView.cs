@@ -1,16 +1,15 @@
-using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class BusinessView : MonoBehaviour {
 
-    [SerializeField] private TextMeshProUGUI _businessNameText;
-    [SerializeField] private TextMeshProUGUI _businessLevelText;
-    [SerializeField] private TextMeshProUGUI _businessIncomeText;
+    [SerializeField] private Text _businessNameText;
+    [SerializeField] private Text _businessLevelText;
+    [SerializeField] private Text _businessIncomeText;
 
-    [SerializeField] private TextMeshProUGUI _nextLevelButtonText;
-    [SerializeField] private TextMeshProUGUI _upgrade1ButtonText;
-    [SerializeField] private TextMeshProUGUI _upgrade2ButtonText;
+    [SerializeField] private Text _nextLevelButtonText;
+    [SerializeField] private Text _upgrade1ButtonText;
+    [SerializeField] private Text _upgrade2ButtonText;
 
     [SerializeField] private Button _buyLevelButton;
     [SerializeField] private Button _upgrade1Button;
@@ -45,71 +44,91 @@ public class BusinessView : MonoBehaviour {
     }
 
     /// <summary>
-    /// Updates the income progress indicator
+    /// Updates the income progress indicator only if value changed
     /// </summary>
     /// <param name="progress"></param>
     public void UpdateIncomeProgress(float progress) {
         if (_incomeProgressSlider != null) {
-            _incomeProgressSlider.value = progress;
+            // Проверяем, отличается ли новое значение от текущего
+            if (Mathf.Abs(_incomeProgressSlider.value - progress) > 0.001f) {
+                _incomeProgressSlider.value = progress;
+            }
         }
     }
 
     /// <summary>
-    /// Updates the business level text
+    /// Updates the business level text only if changed
     /// </summary>
     /// <param name="level"></param>
     public void UpdateBusinessLevel(int level) {
         if (_businessLevelText != null) {
-            _businessLevelText.text = "LVL: " + level.ToString();
+            string newText = "LVL:\n" + level.ToString();
+            if (_businessLevelText.text != newText) {
+                _businessLevelText.text = newText;
+            }
         }
     }
 
     /// <summary>
-    /// Updates the business income text
+    /// Updates the business income text only if changed
     /// </summary>
     /// <param name="income"></param>
     public void UpdateBusinessIncome(float income) {
         if (_businessIncomeText != null) {
-            _businessIncomeText.text = "Доход: " + income.ToString() + "$";
+            string newText = "Доход:\n" + income.ToString() + "$";
+            if (_businessIncomeText.text != newText) {
+                _businessIncomeText.text = newText;
+            }
         }
     }
 
     /// <summary>
-    /// Updates the next level purchase button text
+    /// Updates the next level purchase button text only if changed
     /// </summary>
     /// <param name="cost"></param>
     public void UpdateNextLevelCost(float cost) {
         if (_nextLevelButtonText != null) {
-            _nextLevelButtonText.text = "LVL UP\nЦена: " + cost.ToString() + "$";
+            string newText = "LVL UP\nЦена: " + cost.ToString() + "$";
+            if (_nextLevelButtonText.text != newText) {
+                _nextLevelButtonText.text = newText;
+            }
         }
     }
 
     /// <summary>
-    /// Updates the first upgrade purchase button text
+    /// Updates the first upgrade button only if changed
     /// </summary>
-    /// <param name="cost"></param>
     public void UpdateUpgrade1(string upgradeName, float cost, float multiplier, bool ready) {
         if (_upgrade1ButtonText != null) {
-            _upgrade1ButtonText.text = upgradeName + "\n" 
-            + "Доход: " + ((multiplier - 1) * 100) + "%" + "\n" 
-            + "Цена: " + (ready ? "Куплено" : (cost.ToString() + "$"));
+            string newText = upgradeName + "\n" 
+                + "Доход: " + ((multiplier - 1) * 100) + "%" + "\n" 
+                + "Цена: " + (ready ? "Куплено" : (cost.ToString() + "$"));
+            
+            if (_upgrade1ButtonText.text != newText) {
+                _upgrade1ButtonText.text = newText;
+            }
         }
-        if (_upgrade1Button != null) {
+        
+        if (_upgrade1Button != null && _upgrade1Button.interactable == ready) {
             _upgrade1Button.interactable = !ready;
         }
     }
 
     /// <summary>
-    /// Updates the second upgrade purchase button text
+    /// Updates the second upgrade button only if changed
     /// </summary>
-    /// <param name="cost"></param>
     public void UpdateUpgrade2(string upgradeName, float cost, float multiplier, bool ready) {
         if (_upgrade2ButtonText != null) {
-            _upgrade2ButtonText.text = upgradeName + "\n" 
-            + "Доход: " + ((multiplier - 1) * 100) + "%" + "\n" 
-            + "Цена: " + (ready ? "Куплено" : (cost.ToString() + "$"));
+            string newText = upgradeName + "\n" 
+                + "Доход: " + ((multiplier - 1) * 100) + "%" + "\n" 
+                + "Цена: " + (ready ? "Куплено" : (cost.ToString() + "$"));
+            
+            if (_upgrade2ButtonText.text != newText) {
+                _upgrade2ButtonText.text = newText;
+            }
         }
-        if (_upgrade2Button != null) {
+        
+        if (_upgrade2Button != null && _upgrade2Button.interactable == ready) {
             _upgrade2Button.interactable = !ready;
         }
     }

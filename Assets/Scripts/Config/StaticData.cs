@@ -1,7 +1,9 @@
 using System;
 using UnityEngine;
+
 /// <summary>
 /// Static data for the game.(And Default data if no save)
+/// Contains only gameplay data, not localized text.
 /// </summary>
 [CreateAssetMenu(menuName = "StaticData")]
 public class StaticData : ScriptableObject {
@@ -11,22 +13,20 @@ public class StaticData : ScriptableObject {
 
 [Serializable]
 public struct BusinessPreset {
-    public string  id;          
-    public string   displayName; 
+    [Header("Identifier")]
+    public string id;          
 
+    [Header("Game Parameters")]
     public int startLevel;
-
-    public float    delay;       
-    public float  baseCost;    
-    public float  baseIncome;  
+    public float delay;       
+    public float baseCost;    
+    public float baseIncome;  
     
-    // Upgrade 1
-    public string   upgrade1Title;       
-    public float  upgrade1Cost;        
-    public float    upgrade1IncomeMul;   
+    [Header("Upgrade 1")]
+    public float upgrade1Cost;        
+    public float upgrade1IncomeMul;   
 
-    // Upgrade 2
-    public string   upgrade2Title;       
-    public float  upgrade2Cost;        
-    public float    upgrade2IncomeMul;   
+    [Header("Upgrade 2")]
+    public float upgrade2Cost;        
+    public float upgrade2IncomeMul;   
 }

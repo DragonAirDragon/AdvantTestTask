@@ -1,5 +1,5 @@
 using UnityEngine;
-using TMPro;
+using UnityEngine.UI;
 
 /// <summary>
 /// Scene-specific data.
@@ -7,5 +7,5 @@ using TMPro;
 public class SceneData: MonoBehaviour {
     public BusinessView businessViewPrefab;
     public Transform businessListRoot;
-    public TextMeshProUGUI moneyText;
+    public Text moneyText;
 }

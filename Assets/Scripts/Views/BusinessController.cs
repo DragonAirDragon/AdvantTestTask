@@ -25,7 +25,6 @@ public class BusinessController : MonoBehaviour {
         ref var purchaseEvent = ref entity.Get<PurchaseLevelEvent>();
         purchaseEvent.businessEntity = _businessEntity;
         
-        Debug.Log($"Created level purchase event for {_businessEntity}");
     }
     
     private void OnBuyUpgrade1() {
@@ -35,7 +34,6 @@ public class BusinessController : MonoBehaviour {
         ref var purchaseEvent = ref entity.Get<PurchaseUpgrade1Event>();
         purchaseEvent.businessEntity = _businessEntity;
         
-        Debug.Log($"Created upgrade 1 purchase event for {_businessEntity}");
     }
     
     private void OnBuyUpgrade2() {
@@ -45,6 +43,5 @@ public class BusinessController : MonoBehaviour {
         ref var purchaseEvent = ref entity.Get<PurchaseUpgrade2Event>();
         purchaseEvent.businessEntity = _businessEntity;
         
-        Debug.Log($"Created upgrade 2 purchase event for {_businessEntity}");
     }
 } 
