@@ -157,7 +157,7 @@ https://cloud.mail.ru/public/rG1p/WvmXK3LEk
 
 ---
 
-**Автор**: Nikita Isenko  
+**Автор**: Nikita Ischenko  
 **Время разработки**: ~10 часов  
 **Версия Unity**: 2022.3.8f1  
 **Версия LeoECS**: Latest (Git) 
